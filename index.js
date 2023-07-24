@@ -26,22 +26,34 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
-    const collegesCollection = client.db("collegesDB").collection('colleges')
-    const collegesDetailsCollection = client.db("collegesDB").collection('collegesDetails')
-    
-    app.get('/colleges', async (req,res) => {
-      const result = await collegesCollection.find().toArray()
-        res.send(result)
-    })
+    const collegesCollection = client.db("collegesDB").collection("colleges");
+    const admissionDataCollection=client.db('collegesDB').collection('admissionData')
 
-     app.get('/college-details/:id', async (req,res) => {
-       const id = req.params.id;
-       const query = {_id: new ObjectId(id) };
-       const result = await collegesCollection.findOne(query);
-       console.log("form....", result);
+    app.get("/colleges", async (req, res) => {
+      const result = await collegesCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/college-details/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await collegesCollection.findOne(query);
+
+      res.send(result);
+    });
+
+    // admission  post api
+    app.post("/admission-data", async (req, res) => {
+      const newData = req.body;
+      const result = await admissionDataCollection.insertOne(newData);
+      res.send(result);
+    });
+
+   // admission get api
+     app.get("/admission-data", async (req, res) => {
+       const result = await admissionDataCollection.find().toArray();
        res.send(result);
      });
-
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
