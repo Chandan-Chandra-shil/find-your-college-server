@@ -9,7 +9,7 @@ app.use(cors());
 app.use(express.json())
 
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.dyntprt.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -25,6 +25,24 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+
+    const collegesCollection = client.db("collegesDB").collection('colleges')
+    const collegesDetailsCollection = client.db("collegesDB").collection('collegesDetails')
+    
+    app.get('/colleges', async (req,res) => {
+      const result = await collegesCollection.find().toArray()
+        res.send(result)
+    })
+
+     app.get('/college-details/:id', async (req,res) => {
+       const id = req.params.id;
+       const query = {_id: new ObjectId(id) };
+       const result = await collegesCollection.findOne(query);
+       console.log("form....", result);
+       res.send(result);
+     });
+
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
@@ -42,6 +60,6 @@ app.get('/', (req, res) => {
   res.send('find your college is running')
 })
 
-app.listen(port, () => [
-  console.log(`Find Your College is Running on ${port}`)
-])
+app.listen(port, () => {
+  console.log(`Find Your College is Running on ${port}`);
+})
