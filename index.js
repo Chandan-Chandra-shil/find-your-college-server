@@ -24,10 +24,12 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    /* await client.connect(); */
 
     const collegesCollection = client.db("collegesDB").collection("colleges");
-    const admissionDataCollection=client.db('collegesDB').collection('admissionData')
+    const admissionDataCollection = client
+      .db("collegesDB")
+      .collection("admissionData");
 
     app.get("/colleges", async (req, res) => {
       const result = await collegesCollection.find().toArray();
@@ -42,6 +44,21 @@ async function run() {
       res.send(result);
     });
 
+    // This method will send all data
+    app.get("/colleges-name", async (req, res) => {
+      const searchText = req.query.search;
+      console.log("50 line",searchText)
+      let query = {};
+      if (req.query?.search) {
+        const regexPattern = new RegExp(`.*${searchText}.*`, "i");
+
+        query = { collegeName: regexPattern };
+      }
+
+      const result = await collegesCollection.find(query).toArray();
+      res.send(result);
+    });
+
     // admission  post api
     app.post("/admission-data", async (req, res) => {
       const newData = req.body;
@@ -49,11 +66,11 @@ async function run() {
       res.send(result);
     });
 
-   // admission get api
-     app.get("/admission-data", async (req, res) => {
-       const result = await admissionDataCollection.find().toArray();
-       res.send(result);
-     });
+    // admission get api
+    app.get("/admission-data", async (req, res) => {
+      const result = await admissionDataCollection.find().toArray();
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
